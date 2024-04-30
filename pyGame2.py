@@ -50,6 +50,10 @@ last_known_pos = None
 # Main loop
 running = True
 
+# Run face detection less frequently
+process_every_n_frames = 3
+frame_count = 0
+
 count = 0
 while running:
     # Handle events
@@ -59,15 +63,17 @@ while running:
 
     # Read the next frame from the camera
     ret, frame = video_capture.read()
+    
     if not ret:
         continue  # If frame reading wasn't successful, skip the iteration
+    frame = cv2.flip(frame, 1)
 
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    # Find all the faces and face encodings in the current frame of video
-    face_locations = face_recognition.face_locations(rgb_frame)
-    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
-
+    if frame_count % process_every_n_frames == 0:
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        # Find all the faces and face encodings in the current frame of video
+        face_locations = face_recognition.face_locations(rgb_frame)
+        face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+    frame_count += 1
     # Convert the image to Pygame surface and display it
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB
     frame = np.rot90(frame)
